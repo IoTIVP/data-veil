@@ -134,3 +134,26 @@ python -m venv .venv
 
 
 
+---
+
+## 🌐 LiDAR Sweep Demo (v0.1 extension)
+
+In addition to the depth-field demo, this repo also includes a **LiDAR sweep** sensor deception demo in `run_lidar_demo.py`.
+
+### What it simulates
+
+- A 360° LiDAR scan represented as a 1D array of ranges (`0.0 .. 1.0`)
+- A base environment with a few real obstacles
+- A veiled scan with:
+  - warped ranges,
+  - void sectors (no returns / max range),
+  - and ghost obstacles (fake close returns)
+
+### How to run it
+
+From the project root, with your virtual environment activated:
+
+```bash
+python run_lidar_demo.py
+
+
