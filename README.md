@@ -315,3 +315,12 @@ This mode simulates:
 ```bash
 python run_rf_demo.py
 
+---
+
+## 🧩 Multi-Sensor Fusion Dashboard
+
+To visualize all current sensor modes in a single view:
+
+```bash
+python run_fusion_dashboard.py
+
