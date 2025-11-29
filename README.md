@@ -283,3 +283,35 @@ targets the *evolution* of sensor data over time.
 
 ```bash
 python run_temporal_ghost_demo.py
+
+---
+
+## 📡 RF Field / Electromagnetic Demo (v0.4)
+
+Data Veil now includes a synthetic RF field generator and a full RF deception engine.
+
+This mode simulates:
+- WiFi / BLE signal intensity
+- UWB beacons
+- radar-style propagation
+- electromagnetic “heatmap” fields
+
+### What the trusted system sees
+- smooth RF coverage lobes  
+- gradual attenuation with distance  
+- consistent signal sources  
+- realistic noise and shadowing  
+
+### What the attacker sees (veiled)
+- warped propagation lobes  
+- interference blooms  
+- RF dead zones / nulls  
+- fake hot spots  
+- spatial distortions  
+- inconsistent field geometry  
+
+### Run the RF demo
+
+```bash
+python run_rf_demo.py
+
