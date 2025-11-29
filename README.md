@@ -157,3 +157,45 @@ From the project root, with your virtual environment activated:
 python run_lidar_demo.py
 
 
+---
+
+## 🛣 Roadmap – Where Data Veil Could Go Next
+
+This v0.1 release focuses on **depth fields** and a **single 360° LiDAR sweep**.  
+Future versions could explore:
+
+### 1. More Sensor Types
+- **Thermal / IR maps** – deceive heat-based perception.
+- **RF / signal-strength grids** – distort wireless field awareness.
+- **IMU streams (accelerometer/gyro)** – simulate wobble, drift, and false tilt.
+- **GPS / GNSS** – coordinate drift, jumps, and spoofed locations.
+
+### 2. Temporal & Multi-Frame Effects
+- Ghost frames and flicker (time-based anomalies).
+- Gradual drift vs sudden jumps.
+- “Calm then chaos” patterns for red-team testing.
+
+### 3. Multi-Modal Deception
+- Depth vs LiDAR vs GPS vs IMU disagree in controlled ways.
+- Configurable policies:
+  - trusted control loop → real sensors
+  - external / untrusted consumers → veiled composites
+
+### 4. Simulator & Robotics Integration
+- Hooks for:
+  - ROS/ROS2 topics
+  - Gazebo / Webots / Isaac Sim style environments
+- Run Data Veil as a **sidecar** that sits at the exposure boundary
+  of a simulated robot, not inside the control loop.
+
+### 5. Configuration & Policy Layer
+- Simple YAML/JSON policies like:
+
+  ```yaml
+  policies:
+    - name: internal_control_loop
+      sensor_view: real
+    - name: external_dashboard
+      sensor_view: veiled
+    - name: third_party_integration
+      sensor_view: veiled
