@@ -257,3 +257,29 @@ This generates a 2D thermal field representing:
 
 ```bash
 python run_thermal_demo.py
+
+
+---
+
+## ⏱️ Temporal Ghosting & Flicker Demo (v0.3)
+
+Data Veil now includes a **temporal deception module** that operates on
+sequences of depth frames. Instead of attacking a single frame, this mode
+targets the *evolution* of sensor data over time.
+
+### Trusted sequence
+- smooth movement of objects  
+- mild noise  
+- slight drift  
+- stable geometry over several frames  
+
+### Veiled (attacker) sequence
+- ghost frames (old frames replayed)
+- flicker (over-strong veiling on periodic frames)
+- sudden jumps or inconsistent motion
+- breaks temporal coherence for perception models
+
+### Run the temporal ghosting demo
+
+```bash
+python run_temporal_ghost_demo.py
