@@ -227,3 +227,33 @@ policies:
     trust: untrusted
     sensor_view: veiled
 
+
+---
+
+## 🔥 Thermal / IR Sensor Demo (v0.2)
+
+Data Veil also includes a thermal/infrared simulation and deception module.
+This generates a 2D thermal field representing:
+
+- hot machinery
+- people or heat sources
+- cooler vents / airflow regions
+- spatial heat gradients
+
+### What the trusted system sees
+
+- Smooth, realistic heat distribution  
+- Hot spots, cold zones  
+- Consistent thermal patterns  
+
+### What an attacker sees (veiled)
+
+- warped heat gradients  
+- ghost hot sources  
+- ghost cold zones  
+- impossible patterns that break reconstruction attempts  
+
+### Run the thermal demo
+
+```bash
+python run_thermal_demo.py
