@@ -1,6 +1,8 @@
 \# 🧠 DATA VEIL v0.1 – Depth-Field Sensor Deception Engine
 
 
+![Trusted vs veiled depth field](https://github.com/IoTIVP/data-veil/blob/main/examples/trusted_vs_hacker.png?raw=true)
+
 
 > \*“If an attacker taps your sensor stream, what if the environment could lie?”\*
 
