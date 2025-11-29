@@ -199,3 +199,31 @@ Future versions could explore:
       sensor_view: veiled
     - name: third_party_integration
       sensor_view: veiled
+
+---
+
+## 🧩 Policy Layer (v0.2 Foundation)
+
+Data Veil now includes an early **policy engine** that determines which clients
+receive *real* sensor data and which receive *veiled* (synthetic / distorted)
+data at the exposure boundary.
+
+Policies are stored in:  
+`config/policy.yaml`
+
+Example:
+
+```yaml
+policies:
+  - client: internal_control_loop
+    trust: trusted
+    sensor_view: real
+
+  - client: engineering_dashboard
+    trust: semi_trusted
+    sensor_view: veiled
+
+  - client: vendor_integration
+    trust: untrusted
+    sensor_view: veiled
+
