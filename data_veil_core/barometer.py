@@ -1,20 +1,20 @@
 """
-Barometer veiling – fake altitude / pressure anomalies.
+Barometer veiling – fake altitude / pressure anomalies (hardened).
 
 Input format:
     baro: dict with keys:
         "t":        (N,) time
-        "pressure": (N,) pressure values (e.g., hPa or Pa)
+        "pressure": (N,) pressure values (e.g., hPa)
 
 Output:
     new dict with:
-        - slow drift (simulated weather or sensor bias)
-        - transient anomalies (fake altitude changes, pressure spikes)
-        - random noise
+        - multi-frequency drift (weather + sensor bias)
+        - transient altitude illusions and pressure spikes
+        - adaptive noise relative to signal span
 
 Goal:
-    Keep series plausible for casual inspection, but unreliable
-    for external altitude estimation.
+    Make altitude/pressure reconstruction from external logs unreliable,
+    while keeping the series physically plausible.
 """
 
 from typing import Dict
@@ -48,40 +48,78 @@ def veil_barometer(baro: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[s
 
     rng = get_rng()
 
-    # --- 1) Slow drift over time (weather or sensor bias) ---
-
-    t_norm = (t - t[0]) / max(t[-1] - t[0], 1e-6)  # 0..1
-    # Simple smooth curve: small up-down shift
-    drift = (t_norm - 0.5) * (2.0 * strength)  # -strength..+strength
-    # Scale drift relative to dynamic range of pressure
     p_min = float(p.min())
     p_max = float(p.max())
     span = max(p_max - p_min, 1e-3)
+    std = float(p.std())
+    std = max(std, 1e-3)
 
-    drift_scale = 0.01 * span  # about 1% of span
-    veiled["pressure"] += drift * drift_scale
+    # Normalize time 0..1
+    t_norm = (t - t[0]) / max(t[-1] - t[0], 1e-6)
 
-    # --- 2) Transient anomalies (fake altitude changes or spikes) ---
+    # --- 1) Multi-frequency drift ---
 
-    anomaly_count = int(3 * strength)
+    # Combine several low-frequency sin/cos curves with random phases.
+    freqs = np.array([0.1, 0.25, 0.45], dtype=np.float32) * strength
+    phases = rng.uniform(0.0, 2.0 * np.pi, size=freqs.shape[0])
+
+    drift = np.zeros_like(t_norm, dtype=np.float32)
+
+    for i, f in enumerate(freqs):
+        angle = 2.0 * np.pi * f * t_norm + phases[i]
+        # Slightly different contributions: sin, cos, skewed
+        if i == 0:
+            drift += 0.6 * np.sin(angle)
+        elif i == 1:
+            drift += 0.4 * np.cos(angle)
+        else:
+            drift += 0.3 * np.sin(angle + 0.7) * np.cos(0.5 * angle)
+
+    # History-dependent cumulative drift
+    step_sigma = 0.002 * strength
+    steps = rng.normal(0.0, step_sigma, size=n).astype(np.float32)
+    cumulative = np.cumsum(steps)
+
+    drift += cumulative
+
+    # Scale drift relative to span
+    drift_scale = 0.03 * span  # about 3% of range at full strength
+    p += drift_scale * drift
+
+    # --- 2) Transient anomalies (altitude illusions, spikes) ---
+
+    anomaly_count = int(3 * strength) + rng.integers(0, 3)
+    anomaly_count = max(anomaly_count, 1)
+
     for _ in range(anomaly_count):
         center = rng.integers(5, max(6, n - 5))
-        span_len = rng.integers(10, 40)
+        span_len = rng.integers(15, 60)
         end = min(n, center + span_len)
-
-        # Decide if we simulate a sudden climb or descent
-        direction = rng.choice([-1.0, 1.0])
-        amp = (0.02 + 0.03 * rng.random()) * span * strength  # 2-5% of span
+        if end <= center:
+            continue
 
         window_len = end - center
-        window = np.linspace(0.0, 1.0, window_len, dtype=np.float32)
-        shape = window * (1.0 - window) * 4.0  # peak in middle
+        base = np.linspace(0.0, 1.0, window_len, dtype=np.float32)
 
-        veiled["pressure"][center:end] += direction * amp * shape
+        shape_type = rng.choice(["bump", "dip", "tilted"])
+        if shape_type == "bump":
+            shape = base * (1.0 - base) * 4.0
+        elif shape_type == "dip":
+            shape = -base * (1.0 - base) * 4.0
+        else:  # tilted
+            shape = (base - 0.5) * 2.0
 
-    # --- 3) Noise on top (sensor jitter / turbulence) ---
+        # Altitude illusions: amplitude scaled to std and strength
+        amp = (0.5 + 0.8 * rng.random()) * std * strength
+        p[center:end] += amp * shape
 
-    noise_sigma = 0.002 * span * strength
-    veiled["pressure"] += rng.normal(0.0, noise_sigma, size=n)
+    # --- 3) Adaptive noise ---
+
+    noise_sigma = 0.01 * span * strength
+    # modulate noise by a slow envelope so variance is not constant
+    env = 0.5 + 0.5 * np.sin(2.0 * np.pi * 0.05 * t_norm + rng.uniform(0.0, 2.0 * np.pi))
+    p += rng.normal(0.0, noise_sigma * env, size=n)
+
+    veiled["pressure"] = p
 
     return veiled
