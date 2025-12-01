@@ -1,326 +1,181 @@
-\# 🧠 DATA VEIL v0.1 – Depth-Field Sensor Deception Engine
+# 📡 **DATA VEIL – Synthetic Sensor Deception Engine**
 
-
-![Trusted vs veiled depth field](https://github.com/IoTIVP/data-veil/blob/main/examples/trusted_vs_hacker.png?raw=true)
-
-
-> \*“If an attacker taps your sensor stream, what if the environment could lie?”\*
-
-
-
-\*\*Data Veil\*\* is a small, self-contained \*\*sensor deception simulator\*\*.
-
-
-
-It treats a \*\*sensor flow\*\* as a numeric \*\*depth field\*\* (a 2D matrix of distances), then produces a \*\*veiled version\*\* of that field that represents what an attacker or untrusted client would see at an exposure boundary (API, gateway, cloud telemetry, etc.).
-
-
-
-\- \*\*Trusted system\*\* → sees the \*\*real depth field\*\*  
-
-\- \*\*Attacker / untrusted client\*\* → sees the \*\*veiled depth field\*\*
-
-
-
-Images are only used to \*visualize\* those numeric arrays.
-
-
+*A research-friendly toolkit for generating trusted vs veiled sensor streams.*
 
 ---
 
+## 🧠 Overview
 
+**Data Veil** is a multi-sensor deception engine that simulates how autonomous robots, drones, and IoT devices can present:
 
-\## 🔍 What this demo does
+- **Trusted internal data** for navigation, autonomy, and safety  
+- **Veiled external data** for logs, cloud exports, or attacker-visible channels  
 
-
-
-This v0.1 demo focuses on a single sensor type:
-
-
-
-\- \*\*Depth field\*\* – a synthetic 2D grid where each cell is a distance value between `0.0` (near) and `1.0` (far).
-
-
-
-The pipeline:
-
-
-
-1\. \*\*Generate a trusted depth field\*\*
-
-&nbsp;  - Simulates a simple environment: sloped floor/wall + two closer “objects”.
-
-2\. \*\*Apply Data Veil\*\*
-
-&nbsp;  - Warps the depth field (non-linear spatial distortion)
-
-&nbsp;  - Carves holes / noisy voids (missing returns, blind spots, interference)
-
-3\. \*\*Visualize\*\*
-
-&nbsp;  - Converts both trusted and veiled depth fields into grayscale images
-
-&nbsp;  - Outputs a \*\*side-by-side\*\*: “Trusted depth field” vs “Veiled depth field”
-
-
-
-The core logic is \*\*numeric\*\* (`numpy` arrays).  
-
-PNG images are just for humans.
-
-
+The result is a synthetic **dual-reality boundary** where the system sees truth and outsiders see distortion.
 
 ---
 
-
-
-\## 🧱 Files
-
-
-
-\- `run\_demo.py`  
-
-&nbsp; - Contains:
-
-&nbsp;   - Synthetic depth-field generator (`generate\_depth\_field`)
-
-&nbsp;   - Data Veil transformation (`apply\_data\_veil`)
-
-&nbsp;   - Visualization helpers (`depth\_to\_image`, `make\_side\_by\_side`)
-
-&nbsp;   - `demo()` entry point
-
-
-
-\- `requirements.txt`  
-
-&nbsp; - Python dependencies:
-
-&nbsp;   - `numpy` – array math
-
-&nbsp;   - `Pillow` – image export for visualization
-
-
-
-\- `examples/` (created by the demo)
-
-&nbsp; - `trusted\_depth.png` – what the trusted system sees
-
-&nbsp; - `veiled\_depth.png` – what an attacker sees at the exposure boundary
-
-&nbsp; - `trusted\_vs\_hacker.png` – side-by-side comparison
-
-
-
----
-
-
-
-\## 🚀 Quickstart
-
-
-
-\### 1. Create and activate a virtual environment
-
-
+## 🚀 Quick Start
 
 ```bash
-
+git clone https://github.com/IoTIVP/data-veil
+cd data-veil
 python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-\# Windows PowerShell:
-
-.venv\\Scripts\\activate
-
-
-
----
-
-## 🌐 LiDAR Sweep Demo (v0.1 extension)
-
-In addition to the depth-field demo, this repo also includes a **LiDAR sweep** sensor deception demo in `run_lidar_demo.py`.
-
-### What it simulates
-
-- A 360° LiDAR scan represented as a 1D array of ranges (`0.0 .. 1.0`)
-- A base environment with a few real obstacles
-- A veiled scan with:
-  - warped ranges,
-  - void sectors (no returns / max range),
-  - and ghost obstacles (fake close returns)
-
-### How to run it
-
-From the project root, with your virtual environment activated:
+Run any demo:
 
 ```bash
 python run_lidar_demo.py
+```
 
-
----
-
-## 🛣 Roadmap – Where Data Veil Could Go Next
-
-This v0.1 release focuses on **depth fields** and a **single 360° LiDAR sweep**.  
-Future versions could explore:
-
-### 1. More Sensor Types
-- **Thermal / IR maps** – deceive heat-based perception.
-- **RF / signal-strength grids** – distort wireless field awareness.
-- **IMU streams (accelerometer/gyro)** – simulate wobble, drift, and false tilt.
-- **GPS / GNSS** – coordinate drift, jumps, and spoofed locations.
-
-### 2. Temporal & Multi-Frame Effects
-- Ghost frames and flicker (time-based anomalies).
-- Gradual drift vs sudden jumps.
-- “Calm then chaos” patterns for red-team testing.
-
-### 3. Multi-Modal Deception
-- Depth vs LiDAR vs GPS vs IMU disagree in controlled ways.
-- Configurable policies:
-  - trusted control loop → real sensors
-  - external / untrusted consumers → veiled composites
-
-### 4. Simulator & Robotics Integration
-- Hooks for:
-  - ROS/ROS2 topics
-  - Gazebo / Webots / Isaac Sim style environments
-- Run Data Veil as a **sidecar** that sits at the exposure boundary
-  of a simulated robot, not inside the control loop.
-
-### 5. Configuration & Policy Layer
-- Simple YAML/JSON policies like:
-
-  ```yaml
-  policies:
-    - name: internal_control_loop
-      sensor_view: real
-    - name: external_dashboard
-      sensor_view: veiled
-    - name: third_party_integration
-      sensor_view: veiled
+More demos available in the repo (depth, radar, IMU, thermal, RF, stereo, ghosting, etc).
 
 ---
 
-## 🧩 Policy Layer (v0.2 Foundation)
+## 🛰 Supported Sensors & Demos
 
-Data Veil now includes an early **policy engine** that determines which clients
-receive *real* sensor data and which receive *veiled* (synthetic / distorted)
-data at the exposure boundary.
+(See full details in the repository.)
 
-Policies are stored in:  
-`config/policy.yaml`
+Data Veil currently supports synthetic veiling for:
 
-Example:
+- Depth maps  
+- LiDAR ranges / point clouds  
+- Thermal / IR  
+- RF field intensities  
+- Radar range–Doppler  
+- RGB camera  
+- Stereo vision  
+- Ultrasonic rings  
+- IMU (gyro + acceleration)  
+- Temporal “ghosting” sequences  
+- Multi-sensor dashboards  
 
-```yaml
-policies:
-  - client: internal_control_loop
-    trust: trusted
-    sensor_view: real
+Each demo produces:
 
-  - client: engineering_dashboard
-    trust: semi_trusted
-    sensor_view: veiled
-
-  - client: vendor_integration
-    trust: untrusted
-    sensor_view: veiled
-
+- **trusted_*** (internal system view)  
+- **veiled_*** (external attacker view)  
+- **trusted_vs_hacker.png** (side-by-side panel)  
 
 ---
 
-## 🔥 Thermal / IR Sensor Demo (v0.2)
+## 🎯 Threat Model & Scope
 
-Data Veil also includes a thermal/infrared simulation and deception module.
-This generates a 2D thermal field representing:
+Data Veil is a **simulation-only** synthetic deception engine.
 
-- hot machinery
-- people or heat sources
-- cooler vents / airflow regions
-- spatial heat gradients
+It is designed to distinguish between:
 
-### What the trusted system sees
+- **Trusted internal perception** (robot uses this)
+- **Veiled external attacker-facing perception** (attackers, logs, cloud exports)
 
-- Smooth, realistic heat distribution  
-- Hot spots, cold zones  
-- Consistent thermal patterns  
+### Attacker Model
 
-### What an attacker sees (veiled)
+We assume attackers may access:
 
-- warped heat gradients  
-- ghost hot sources  
-- ghost cold zones  
-- impossible patterns that break reconstruction attempts  
+- logs  
+- cloud telemetry  
+- debug/mirror feeds  
+- exported recordings  
 
-### Run the thermal demo
+Data Veil ensures **attackers only see distorted sensor data**, not the true internal environment.
 
-```bash
-python run_thermal_demo.py
+### What Data Veil is NOT
 
+- Not a replacement for authentication  
+- Not cryptographic security  
+- Not firmware hardening  
+- Not to be deployed blindly in safety-critical production  
 
----
-
-## ⏱️ Temporal Ghosting & Flicker Demo (v0.3)
-
-Data Veil now includes a **temporal deception module** that operates on
-sequences of depth frames. Instead of attacking a single frame, this mode
-targets the *evolution* of sensor data over time.
-
-### Trusted sequence
-- smooth movement of objects  
-- mild noise  
-- slight drift  
-- stable geometry over several frames  
-
-### Veiled (attacker) sequence
-- ghost frames (old frames replayed)
-- flicker (over-strong veiling on periodic frames)
-- sudden jumps or inconsistent motion
-- breaks temporal coherence for perception models
-
-### Run the temporal ghosting demo
-
-```bash
-python run_temporal_ghost_demo.py
+It is a **research tool**, not a compliance-grade security layer.
 
 ---
 
-## 📡 RF Field / Electromagnetic Demo (v0.4)
+## 🐍 Python API (data_veil_core)
 
-Data Veil now includes a synthetic RF field generator and a full RF deception engine.
+Data Veil includes a modular, Sci-Fi / DARPA-mode sensor veiling core:
 
-This mode simulates:
-- WiFi / BLE signal intensity
-- UWB beacons
-- radar-style propagation
-- electromagnetic “heatmap” fields
+```python
+from data_veil_core import (
+    veil_depth,
+    veil_lidar,
+    veil_radar,
+    veil_thermal,
+    veil_imu,
+)
+```
 
-### What the trusted system sees
-- smooth RF coverage lobes  
-- gradual attenuation with distance  
-- consistent signal sources  
-- realistic noise and shadowing  
+### Example
 
-### What the attacker sees (veiled)
-- warped propagation lobes  
-- interference blooms  
-- RF dead zones / nulls  
-- fake hot spots  
-- spatial distortions  
-- inconsistent field geometry  
+```python
+import numpy as np
+from data_veil_core import veil_depth
 
-### Run the RF demo
+depth = np.random.rand(64, 96).astype(np.float32)
+veiled = veil_depth(depth, strength=1.3)
 
-```bash
-python run_rf_demo.py
+print("trusted:", depth.min(), depth.max())
+print("veiled:", veiled.min(), veiled.max())
+```
+
+### API Functions
+
+| Function       | Input Type                    | Output                                  |
+|----------------|-------------------------------|------------------------------------------|
+| `veil_depth`   | 2D depth (H×W)                | warped depth, voids, fake surfaces       |
+| `veil_lidar`   | 1D ranges or Nx3 points       | ghost obstacles, erased sectors          |
+| `veil_radar`   | 2D range–Doppler              | phantom targets, ripples, structured noise |
+| `veil_thermal` | 2D thermal image              | smeared patches, heat/cold spoofing      |
+| `veil_imu`     | dict of IMU arrays            | drift, jitter, impact hallucinations     |
+
+See `examples/integration_example.py` for a full hands-on demonstration.
 
 ---
 
-## 🧩 Multi-Sensor Fusion Dashboard
+## 🔧 Architecture
 
-To visualize all current sensor modes in a single view:
+```
+Sensors → Trusted Pipeline → Autonomy
+              ↓
+          Data Veil
+              ↓
+    External / Untrusted Consumers
+```
 
-```bash
-python run_fusion_dashboard.py
+Trusted stays internal.  
+Veiled leaves the system.
 
+---
+
+## 📦 Coming Soon (v1.0 Release)
+
+- pip package (`pip install data-veil`)  
+- Core API module expansion  
+- Integration examples for robotics / cloud pipelines  
+- Untrusted-access filter templates (copy-paste ready)  
+
+---
+
+## 📜 License
+
+MIT License (added for open-source use)
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome from:
+
+- robotics engineers  
+- cybersecurity analysts  
+- red-team researchers  
+- OSINT analysts  
+- simulation experts  
+
+---
+
+## 🎉 Thank You
+
+Explore, remix, collaborate, and build on Data Veil.  
+The project is open-source and designed for creativity, research, and future experimentation.
