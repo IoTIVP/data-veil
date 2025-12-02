@@ -2,14 +2,12 @@
 DATA VEIL – RF Power Demo
 
 Synthetic RF power time series:
-  - Base signal around some level
-  - Small natural variations (fading, motion)
+  - Base level around -65 dB (for example)
+  - Slow fading-like variation
 We apply veil_rf to simulate:
   - warped baseline
-  - interference bursts
+  - interference-like bursts
   - time-varying noise
-
-This represents what an attacker or external logger would see.
 """
 
 import os
@@ -29,9 +27,8 @@ def synth_rf(n: int = 600, dt: float = 0.05) -> dict:
     rng = get_rng()
     t = np.linspace(0, (n - 1) * dt, n, dtype=np.float32)
 
-    # Base RF level (e.g. -65 dBm) with slow fading
     base_level = -65.0
-    slow_fade = 2.0 * np.sin(2.0 * np.pi * 0.01 * t)  # slow multipath-like change
+    slow_fade = 2.0 * np.sin(2.0 * np.pi * 0.01 * t)
     noise = rng.normal(0.0, 0.8, size=n)
 
     power = base_level + slow_fade + noise

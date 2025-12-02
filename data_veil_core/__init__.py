@@ -1,7 +1,7 @@
 """
 data_veil_core
 
-Sci-Fi / DARPA-mode veiling functions for multi-sensor deception.
+Sensor veiling functions for multi-sensor deception/obfuscation.
 """
 
 from .depth import veil_depth

@@ -1,5 +1,5 @@
 """
-RF power veiling – fake interference and RF ghost pockets.
+RF power veiling – fake interference and RF "ghost" regions.
 
 Input format:
     rf: dict with keys:
@@ -9,15 +9,15 @@ Input format:
 Output:
     new dict with:
         - multi-frequency baseline warping
-        - intermittent interference bursts (jamming, ghost signals)
-        - adaptive noise whose variance changes over time
+        - intermittent interference-like bursts
+        - adaptive noise with time-varying variance
 
 Goal:
     Make RF logs from untrusted interfaces unreliable for:
       - localization
       - interference analysis
       - environment reconstruction
-    while remaining plausible to a casual or even expert observer.
+    while remaining plausible on inspection.
 """
 
 from typing import Dict
@@ -75,7 +75,7 @@ def veil_rf(rf: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[str, np.nd
         else:
             baseline_warp += 0.4 * np.sin(angle + 0.6) * np.cos(0.4 * angle)
 
-    # Add slow cumulative drift so pattern cannot be modeled as pure sinusoids
+    # Add slow cumulative drift so pattern is not just sinusoidal
     step_sigma = 0.01 * strength
     steps = rng.normal(0.0, step_sigma, size=n).astype(np.float32)
     cumulative = np.cumsum(steps)
@@ -86,7 +86,7 @@ def veil_rf(rf: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[str, np.nd
     warp_scale = 0.2 * span  # up to 20% of RF range
     power += warp_scale * baseline_warp
 
-    # --- 2) Interference bursts / RF ghost pockets ---
+    # --- 2) Interference-like bursts / "ghost" regions ---
 
     burst_count = int(3 * strength) + rng.integers(0, 4)
     burst_count = max(burst_count, 1)
@@ -102,27 +102,24 @@ def veil_rf(rf: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[str, np.nd
         base = np.linspace(0.0, 1.0, window_len, dtype=np.float32)
 
         # Different interference patterns
-        shape_type = rng.choice(["spike_train", "jam_block", "notch"])
+        shape_type = rng.choice(["spike_train", "block", "notch"])
         if shape_type == "spike_train":
-            # rapid pulsing, like intermittent interference
+            # intermittent spikes within a shaped envelope
             spikes = (rng.random(size=window_len) > 0.6).astype(np.float32)
-            # smooth edges
             envelope = base * (1.0 - base) * 4.0
             shape = spikes * envelope
-        elif shape_type == "jam_block":
-            # full-on jamming plateau with soft edges
+        elif shape_type == "block":
+            # plateau with soft edges
             shape = base * (1.0 - base) * 4.0
-        else:  # "notch" – signal drop / shadow
+        else:  # "notch" – signal drop region
             shape = -base * (1.0 - base) * 4.0
 
-        # amplitude relative to std and strength
         amp = (1.0 + 1.5 * rng.random()) * std * strength
         power[center:end] += amp * shape
 
     # --- 3) Adaptive noise (time-varying variance) ---
 
     noise_sigma = 0.05 * span * strength
-    # envelope modulates noise intensity, creating "breathing" RF noise
     env_phase = rng.uniform(0.0, 2.0 * np.pi)
     env = 0.4 + 0.6 * np.abs(np.sin(2.0 * np.pi * 0.07 * t_norm + env_phase))
     power += rng.normal(0.0, noise_sigma * env, size=n)
