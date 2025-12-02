@@ -1,17 +1,20 @@
-# 📡 **DATA VEIL – Synthetic Sensor Deception Engine**
+# 📡 **DATA VEIL – Synthetic Sensor Distortion & Privacy Layer**
 
-*A research-friendly toolkit for generating trusted vs veiled sensor streams.*
+*A research toolkit for generating **trusted vs veiled sensor streams** in robotics, IoT, and simulation environments.*
 
 ---
 
 ## 🧠 Overview
 
-**Data Veil** is a multi-sensor deception engine that simulates how autonomous robots, drones, and IoT devices can present:
+Modern robots, drones, and IoT systems often expose sensor data to cloud services, logs, integrations, and external interfaces.  
+**Data Veil** introduces a synthetic privacy boundary:
 
-- **Trusted internal data** for navigation, autonomy, and safety  
-- **Veiled external data** for logs, cloud exports, or attacker-visible channels  
+- **Trusted internal data** → used for perception, autonomy, safety  
+- **Veiled external data** → exported to logs, cloud endpoints, or any non-privileged consumer  
 
-The result is a synthetic **dual-reality boundary** where the system sees truth and outsiders see distortion.
+This creates a **dual-reality layer** that protects internal perception while still providing usable (but intentionally distorted) external streams.
+
+Think of it as **sensor redaction for machines**—the system sees truth, while external observers only see synthetic noise, distortion, or altered geometry.
 
 ---
 
@@ -31,70 +34,73 @@ Run any demo:
 python run_lidar_demo.py
 ```
 
-More demos available in the repo (depth, radar, IMU, thermal, RF, stereo, ghosting, etc).
+More demos available in the `examples/` directory: depth, radar, IMU, thermal, RF, stereo, ghosting, etc.
 
 ---
 
-## 🛰 Supported Sensors & Demos
+## 🛰 Supported Sensors & Synthetic Profiles
 
-(See full details in the repository.)
-
-Data Veil currently supports synthetic veiling for:
+**Data Veil currently simulates distortion for:**
 
 - Depth maps  
-- LiDAR ranges / point clouds  
-- Thermal / IR  
-- RF field intensities  
-- Radar range–Doppler  
+- LiDAR (ranges & point clouds)  
+- Thermal / IR frames  
+- RF intensity fields  
+- Radar (range–Doppler maps)  
 - RGB camera  
-- Stereo vision  
+- Stereo disparity  
 - Ultrasonic rings  
-- IMU (gyro + acceleration)  
-- Temporal “ghosting” sequences  
+- IMU (gyro + accel)  
+- Temporal ghosting sequences  
 - Multi-sensor dashboards  
 
 Each demo produces:
 
-- **trusted_*** (internal system view)  
-- **veiled_*** (external attacker view)  
-- **trusted_vs_hacker.png** (side-by-side panel)  
+- `trusted_*` — internal system truth  
+- `veiled_*` — external/non-privileged output  
+- `*_trusted_vs_veiled.png` — side-by-side comparison  
 
 ---
 
 ## 🎯 Threat Model & Scope
 
-Data Veil is a **simulation-only** synthetic deception engine.
+Data Veil is a **research-focused simulation tool**, intended for:
 
-It is designed to distinguish between:
+- Privacy-preserving telemetry  
+- Synthetic data generation  
+- Robotics robustness studies  
+- Simulation redactions  
+- Adversarial testing  
+- Multi-sensor perception experiments  
 
-- **Trusted internal perception** (robot uses this)
-- **Veiled external attacker-facing perception** (attackers, logs, cloud exports)
+### **Trusted vs Untrusted Paths**
 
-### Attacker Model
+**Internal (trusted):**
 
-We assume attackers may access:
+- High-accuracy sensor data  
+- Used for autonomy & decision-making  
 
-- logs  
-- cloud telemetry  
-- debug/mirror feeds  
-- exported recordings  
+**External (untrusted):**
 
-Data Veil ensures **attackers only see distorted sensor data**, not the true internal environment.
+- Logs  
+- Cloud exports  
+- Monitoring dashboards  
+- Third-party API consumers  
 
-### What Data Veil is NOT
+External consumers only receive **veil-modified data**, not the raw sensor truth.
 
-- Not a replacement for authentication  
-- Not cryptographic security  
-- Not firmware hardening  
-- Not to be deployed blindly in safety-critical production  
+### Data Veil is *not*:
 
-It is a **research tool**, not a compliance-grade security layer.
+- A replacement for cybersecurity controls  
+- A cryptographic integrity system  
+- A safety-critical isolation boundary  
+- A hardware protection mechanism  
+
+It’s a **synthetic signal transformation toolkit**, not a security product.
 
 ---
 
 ## 🐍 Python API (data_veil_core)
-
-Data Veil includes a modular, Sci-Fi / High-distortion mode sensor veiling core:
 
 ```python
 from data_veil_core import (
@@ -113,69 +119,97 @@ import numpy as np
 from data_veil_core import veil_depth
 
 depth = np.random.rand(64, 96).astype(np.float32)
-veiled = veil_depth(depth, strength=1.3)
+veiled = veil_depth(depth, strength=1.2)
 
 print("trusted:", depth.min(), depth.max())
 print("veiled:", veiled.min(), veiled.max())
 ```
 
-### API Functions
+### Function Overview
 
-| Function       | Input Type                    | Output                                  |
-|----------------|-------------------------------|------------------------------------------|
-| `veil_depth`   | 2D depth (H×W)                | warped depth, voids, fake surfaces       |
-| `veil_lidar`   | 1D ranges or Nx3 points       | ghost obstacles, erased sectors          |
-| `veil_radar`   | 2D range–Doppler              | phantom targets, ripples, structured noise |
-| `veil_thermal` | 2D thermal image              | smeared patches, heat/cold spoofing      |
-| `veil_imu`     | dict of IMU arrays            | drift, jitter, impact hallucinations     |
+| Function         | Input                          | Output Description                           |
+|------------------|--------------------------------|-----------------------------------------------|
+| `veil_depth`     | 2D depth map                   | warped surfaces, voids, geometric shifts      |
+| `veil_lidar`     | 1D ranges or Nx3 points        | ghost returns, erased slices, synthetic arcs  |
+| `veil_radar`     | 2D range–Doppler               | ripples, phantom targets, structured noise    |
+| `veil_thermal`   | 2D thermal frame               | heat smears, synthetic outliers               |
+| `veil_imu`       | accel/gyro arrays              | drift, jitter, controlled perturbations       |
 
-See `examples/integration_example.py` for a full hands-on demonstration.
+See `examples/integration_example.py` for a full multi-sensor demo.
 
 ---
 
 ## 🔧 Architecture
 
+```txt
+   ┌──────────────┐
+   │  Sensors      │
+   └──────┬────────┘
+          │
+     (Trusted Path)
+          │
+   ┌──────────────┐
+   │  Autonomy     │
+   │  Navigation   │
+   └──────┬────────┘
+          │
+     (Veil Layer)
+          │
+   ┌──────────────┐
+   │ External /    │
+   │ Untrusted     │
+   │ Consumers     │
+   └──────────────┘
 ```
-Sensors → Trusted Pipeline → Autonomy
-              ↓
-          Data Veil
-              ↓
-    External / Untrusted Consumers
-```
-
-Trusted stays internal.  
-Veiled leaves the system.
 
 ---
 
-## 📦 Coming Soon (v1.0 Release)
+## 📦 Roadmap Toward v1.0 Release
 
-- pip package (`pip install data-veil`)  
-- Core API module expansion  
-- Integration examples for robotics / cloud pipelines  
-- Untrusted-access filter templates (copy-paste ready)  
+- ✔ pip-installable package (`pip install data-veil`)  
+- ✔ Unified `data_veil_core` module  
+- ✔ Plugin registry for new sensor types  
+- ✔ Consistent distortion modes  
+- ✔ Policy-based veiling profiles  
+- — Real-time demos and GIF exporters  
+- — Cloud integration example (MQTT / ROS2 / REST)  
+- — Sensor fusion example (multiple modalities together)  
+- — Advanced distortion modes (high-intensity / structured)  
+
+---
+
+## 🧩 Use Cases
+
+- Robotics simulation  
+- Privacy-preserving logs & telemetry  
+- Synthetic dataset generation  
+- ML robustness testing  
+- Sensor-fault simulation  
+- Educational tools for perception systems  
+- Redaction of sensitive spatial data  
 
 ---
 
 ## 📜 License
 
-MIT License (added for open-source use)
+MIT License  
+Fully open source for research and experimentation.
 
 ---
 
 ## 🤝 Contributing
 
-Pull requests are welcome from:
+Contributions are welcome from:
 
-- robotics engineers  
-- cybersecurity analysts  
-- red-team researchers  
-- OSINT analysts  
-- simulation experts  
+- Robotics engineers  
+- ML / CV researchers  
+- IoT developers  
+- Simulation specialists  
+- Students & hobbyists  
 
 ---
 
-## 🎉 Thank You
+## 🎉 Thanks for Exploring Data Veil
 
-Explore, remix, collaborate, and build on Data Veil.  
-The project is open-source and designed for creativity, research, and future experimentation.
+This toolkit aims to make sensor research more expressive, safer to share, and more fun to experiment with.  
+Build something cool on top of it.
