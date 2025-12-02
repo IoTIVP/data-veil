@@ -1,0 +1,18 @@
+# Policy file for Data Veil v0.2 (foundation)
+
+policies:
+  - client: internal_control_loop
+    trust: trusted
+    sensor_view: real
+
+  - client: engineering_dashboard
+    trust: semi_trusted
+    sensor_view: veiled
+
+  - client: vendor_integration
+    trust: untrusted
+    sensor_view: veiled
+
+  - client: third_party_analytics
+    trust: untrusted
+    sensor_view: veiled

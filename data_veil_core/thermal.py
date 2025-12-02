@@ -11,8 +11,8 @@ Output:
       - thermal "ghosts" and wiped regions
 """
 
-from __future__ import annotations
 import numpy as np
+from .random_control import get_rng
 
 
 def veil_thermal(thermal: np.ndarray, strength: float = 1.0) -> np.ndarray:
@@ -31,7 +31,7 @@ def veil_thermal(thermal: np.ndarray, strength: float = 1.0) -> np.ndarray:
 
     t = thermal.astype(np.float32).copy()
     h, w = t.shape
-    rng = np.random.default_rng()
+    rng = get_rng()
 
     t_min = float(np.min(t))
     t_max = float(np.max(t))

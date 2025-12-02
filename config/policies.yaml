@@ -1,0 +1,56 @@
+# DATA VEIL – Example policies for exposure boundary decisions
+#
+# This is NOT enforcement logic – just configuration that a system
+# could use to decide how aggressively to veil for different consumers.
+
+default:
+  description: "Baseline veiling for unknown or generic consumers."
+  strength_multiplier: 1.0
+  modes:
+    depth: strong
+    lidar: strong
+    radar: normal
+    thermal: normal
+    imu: normal
+
+profiles:
+
+  external_logs:
+    description: "Logs written to disk / SIEM that might be scraped."
+    strength_multiplier: 1.3
+    modes:
+      depth: strong
+      lidar: strong
+      radar: strong
+      thermal: strong
+      imu: strong
+
+  cloud_export:
+    description: "Telemetry sent to external cloud dashboards."
+    strength_multiplier: 1.5
+    modes:
+      depth: ghost_heavy
+      lidar: ghost_heavy
+      radar: ghost_heavy
+      thermal: adversarial
+      imu: drift_heavy
+
+  internal_debug:
+    description: "Internal engineers with partial trust."
+    strength_multiplier: 0.6
+    modes:
+      depth: light
+      lidar: light
+      radar: normal
+      thermal: normal
+      imu: light
+
+  red_team:
+    description: "Explicit red-team / deception experiments."
+    strength_multiplier: 2.0
+    modes:
+      depth: chaos
+      lidar: chaos
+      radar: chaos
+      thermal: chaos
+      imu: chaos

@@ -12,8 +12,8 @@ The goal is to:
     - preserve overall "LiDAR-like" structure so it looks plausible at a glance
 """
 
-from __future__ import annotations
 import numpy as np
+from .random_control import get_rng
 
 
 def veil_lidar(lidar_data: np.ndarray, strength: float = 1.0) -> np.ndarray:
@@ -31,7 +31,7 @@ def veil_lidar(lidar_data: np.ndarray, strength: float = 1.0) -> np.ndarray:
         veiled: numpy array of same shape.
     """
     arr = np.asarray(lidar_data).astype(np.float32)
-    rng = np.random.default_rng()
+    rng = get_rng()
 
     if arr.ndim == 1:
         return _veil_lidar_ranges(arr, strength=strength, rng=rng)

@@ -16,6 +16,7 @@ from .rf import veil_rf
 from .ultrasonic import veil_ultrasonic
 from .fusion import veil_fusion_timeseries
 from .plugins import register_sensor, get_veil, list_sensors
+from .profiles import get_profile_strength, list_profiles
 
 __all__ = [
     "veil_depth",
@@ -31,4 +32,6 @@ __all__ = [
     "register_sensor",
     "get_veil",
     "list_sensors",
+    "get_profile_strength",
+    "list_profiles",
 ]

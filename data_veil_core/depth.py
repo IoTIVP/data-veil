@@ -15,8 +15,8 @@ This is designed to look like a corrupted / adversarial depth field
 that still feels geometrically plausible to a naive consumer.
 """
 
-from __future__ import annotations
 import numpy as np
+from .random_control import get_rng
 
 
 def veil_depth(depth_map: np.ndarray, strength: float = 1.0) -> np.ndarray:
@@ -84,7 +84,7 @@ def veil_depth(depth_map: np.ndarray, strength: float = 1.0) -> np.ndarray:
 
     # --- 2) Punch “voids” and fake walls ---
 
-    rng = np.random.default_rng()
+    rng = get_rng()
 
     # Voids: patches forced to maximum depth (holes / missing surfaces)
     for _ in range(int(5 * strength)):

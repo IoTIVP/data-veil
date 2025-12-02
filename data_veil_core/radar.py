@@ -11,8 +11,8 @@ Output:
       - structured ripple noise
 """
 
-from __future__ import annotations
 import numpy as np
+from .random_control import get_rng
 
 
 def veil_radar(radar_map: np.ndarray, strength: float = 1.0) -> np.ndarray:
@@ -29,7 +29,7 @@ def veil_radar(radar_map: np.ndarray, strength: float = 1.0) -> np.ndarray:
     if radar_map.ndim != 2:
         raise ValueError("veil_radar expects a 2D array.")
 
-    rng = np.random.default_rng()
+    rng = get_rng()
     m = radar_map.astype(np.float32).copy()
     rows, cols = m.shape
 

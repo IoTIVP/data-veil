@@ -14,9 +14,9 @@ Output:
         - jitter
 """
 
-from __future__ import annotations
 import numpy as np
 from typing import Dict
+from .random_control import get_rng
 
 
 def veil_imu(imu: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[str, np.ndarray]:
@@ -40,7 +40,7 @@ def veil_imu(imu: Dict[str, np.ndarray], strength: float = 1.0) -> Dict[str, np.
     if n == 0:
         return veiled
 
-    rng = np.random.default_rng()
+    rng = get_rng()
 
     # --- 1) Slow drift on some channels ---
     drift_scale = strength
