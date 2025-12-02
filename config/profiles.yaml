@@ -1,0 +1,36 @@
+profiles:
+  light:
+    description: Light distortion for demos and low-impact logging.
+    base: 0.5
+    sensors:
+      default: 0.5
+      lidar: 0.6
+      rf: 0.6
+      ultrasonic: 0.5
+
+  privacy:
+    description: Default privacy-preserving distortion.
+    base: 1.0
+    sensors:
+      default: 1.0
+      lidar: 1.1
+      rf: 1.1
+      ultrasonic: 0.9
+
+  ghost:
+    description: Strong distortions with visible artifacts.
+    base: 1.5
+    sensors:
+      default: 1.5
+      lidar: 1.7
+      rf: 1.6
+      ultrasonic: 1.3
+
+  chaos:
+    description: Aggressive, high-entropy distortion for stress tests.
+    base: 2.0
+    sensors:
+      default: 2.0
+      lidar: 2.2
+      rf: 2.3
+      ultrasonic: 1.8
