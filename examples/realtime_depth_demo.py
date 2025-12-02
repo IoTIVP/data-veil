@@ -1,74 +1,170 @@
 """
-DATA VEIL – Real-time-ish Depth Playback Demo
+Realtime-ish Depth Simulation + Data Veil Demonstration
+-------------------------------------------------------
 
-Generates a short sequence of synthetic depth frames, applies veil_depth
-to each, and saves them under:
+Opens a live window that updates depth frames continuously
+and shows:
 
-  examples/realtime_depth/trusted_###.png
-  examples/realtime_depth/veiled_###.png
+LEFT  = Trusted depth map (internal view)
+RIGHT = Veiled depth map (untrusted external view)
+
+Features:
+- Live depth evolution
+- Live veiling using Data Veil
+- Keyboard profile switching:
+
+    1 = light
+    2 = privacy
+    3 = ghost
+    4 = chaos
+
+Profiles are loaded from config/profiles.yaml (if present),
+or from built-in defaults otherwise.
 """
 
+import matplotlib
+matplotlib.use("TkAgg")  # Force GUI backend on Windows
+
+import matplotlib.pyplot as plt
+import numpy as np
+import time
 import os
 import sys
-from pathlib import Path
 
-import numpy as np
-from PIL import Image
-
-# Make project root importable
+# Make sure we can import data_veil_core when running from examples/
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from data_veil_core import veil_depth
+from data_veil_core.random_control import set_seed
+from data_veil_core.profiles import get_profile_strength, list_profiles
 
 
-def synth_depth_frame(t: float, h: int = 64, w: int = 96) -> np.ndarray:
-    yy, xx = np.mgrid[0:h, 0:w]
-    yy_norm = yy / max(h - 1, 1)
-    xx_norm = xx / max(w - 1, 1)
+# ----------------------------------------
+# Generate synthetic depth frames
+# ----------------------------------------
 
-    # moving wavefront + gradient (toy scene)
-    wave = 0.4 * np.sin(2 * np.pi * (xx_norm * 1.2 + t * 0.6))
-    base = 1.0 + 2.0 * yy_norm + wave
-    noise = np.random.normal(0.0, 0.03, size=base.shape)
-    return base + noise
+def generate_depth_frame(t: float) -> np.ndarray:
+    """
+    Create a synthetic depth map that evolves over time.
+    """
+    x = np.linspace(0, 4 * np.pi, 96)
+    y = np.linspace(0, 2 * np.pi, 64)
+    X, Y = np.meshgrid(x, y)
+
+    # Time-evolving wave pattern
+    depth = 2.5 + 1.0 * np.sin(X + t * 0.3) * np.cos(Y + t * 0.5)
+    depth += 0.2 * np.random.randn(64, 96)
+
+    # Ensure positive depth
+    return np.abs(depth).astype(np.float32)
 
 
-def depth_to_image(depth: np.ndarray) -> Image.Image:
-    d_min = float(depth.min())
-    d_max = float(depth.max())
-    span = max(d_max - d_min, 1e-6)
-    norm = (depth - d_min) / span
-    arr = (norm * 255.0).clip(0, 255).astype("uint8")
-    return Image.fromarray(arr, mode="L")
+# ----------------------------------------
+# Main realtime loop with profile switching
+# ----------------------------------------
 
+def main():
+    print("Starting realtime depth demo with live profiles...")
 
-def main(num_frames: int = 30):
-    out_dir = Path(PROJECT_ROOT) / "examples" / "realtime_depth"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    set_seed(42)
 
-    print("Saving frames to:", out_dir)
+    # Initial time and frame
+    t = 0.0
+    depth = generate_depth_frame(t)
 
-    for i in range(num_frames):
-        t = i / max(num_frames - 1, 1)
-        depth = synth_depth_frame(t)
-        veiled = veil_depth(depth, strength=1.2)
+    # Default profile
+    profiles_available = list_profiles()
+    print("Available profiles:", profiles_available)
 
-        trusted_img = depth_to_image(depth)
-        veiled_img = depth_to_image(veiled)
+    current_profile = "privacy" if "privacy" in profiles_available else "light"
+    print(f"Starting with profile: {current_profile}")
 
-        trusted_path = out_dir / f"trusted_{i:03d}.png"
-        veiled_path = out_dir / f"veiled_{i:03d}.png"
+    def current_strength() -> float:
+        # 'depth' as the sensor name for profile lookup
+        return float(get_profile_strength(current_profile, "depth"))
 
-        trusted_img.save(trusted_path)
-        veiled_img.save(veiled_path)
+    veiled = veil_depth(depth, strength=current_strength())
 
-        print(f"Frame {i:03d}: {trusted_path.name}, {veiled_path.name}")
+    # Setup plot
+    plt.ion()
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+    fig.suptitle("Realtime Depth Simulation — Trusted vs Veiled", fontsize=14)
 
-    print("\n✅ Real-time-ish depth demo complete.")
-    print("Open the PNG sequence to see how the scene + veiling evolve over time.")
+    ax_t = axes[0]
+    ax_v = axes[1]
+
+    im_t = ax_t.imshow(depth, cmap="viridis", vmin=0, vmax=5)
+    ax_t.set_title("Trusted Depth")
+    ax_t.axis("off")
+
+    im_v = ax_v.imshow(veiled, cmap="inferno", vmin=0, vmax=5)
+    ax_v.set_title(f"Veiled Depth (profile: {current_profile})")
+    ax_v.axis("off")
+
+    # HUD text for profile + strength
+    hud_text = fig.text(
+        0.5,
+        0.02,
+        f"Profile: {current_profile}  |  strength={current_strength():.2f}  (keys: 1=light, 2=privacy, 3=ghost, 4=chaos)",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+    )
+
+    plt.show(block=False)
+
+    # Key → profile mapping
+    key_to_profile = {
+        "1": "light",
+        "2": "privacy",
+        "3": "ghost",
+        "4": "chaos",
+    }
+
+    def on_key(event):
+        nonlocal current_profile
+        key = event.key
+        if key in key_to_profile:
+            new_profile = key_to_profile[key]
+            if new_profile in profiles_available:
+                current_profile = new_profile
+                print(f"Switched profile to: {current_profile}")
+            else:
+                print(f"Profile '{new_profile}' not available (not in YAML/built-ins).")
+
+    fig.canvas.mpl_connect("key_press_event", on_key)
+
+    try:
+        # Realtime update loop
+        while plt.fignum_exists(fig.number):
+            t += 0.2
+
+            # Generate new frames
+            depth = generate_depth_frame(t)
+            veiled = veil_depth(depth, strength=current_strength())
+
+            # Update plots
+            im_t.set_data(depth)
+            im_v.set_data(veiled)
+            ax_v.set_title(f"Veiled Depth (profile: {current_profile})")
+
+            hud_text.set_text(
+                f"Profile: {current_profile}  |  strength={current_strength():.2f}  (keys: 1=light, 2=privacy, 3=ghost, 4=chaos)"
+            )
+
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+
+            # Small delay to control update rate
+            time.sleep(0.05)
+
+    except KeyboardInterrupt:
+        print("Interrupted by user.")
+
+    print("Window closed. Demo ending.")
 
 
 if __name__ == "__main__":
