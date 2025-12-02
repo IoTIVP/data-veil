@@ -2,6 +2,7 @@
 data_veil_core
 
 Sensor veiling functions for multi-sensor deception / obfuscation.
+This is the main public API surface for the core engine.
 """
 
 from .depth import veil_depth
