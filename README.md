@@ -94,7 +94,7 @@ It is a **research tool**, not a compliance-grade security layer.
 
 ## 🐍 Python API (data_veil_core)
 
-Data Veil includes a modular, Sci-Fi / DARPA-mode sensor veiling core:
+Data Veil includes a modular, Sci-Fi / High-distortion mode sensor veiling core:
 
 ```python
 from data_veil_core import (
