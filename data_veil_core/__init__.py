@@ -14,6 +14,7 @@ from .magnetometer import veil_magnetometer
 from .barometer import veil_barometer
 from .rf import veil_rf
 from .ultrasonic import veil_ultrasonic
+from .fusion import veil_fusion_timeseries
 from .plugins import register_sensor, get_veil, list_sensors
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "veil_barometer",
     "veil_rf",
     "veil_ultrasonic",
+    "veil_fusion_timeseries",
     "register_sensor",
     "get_veil",
     "list_sensors",
