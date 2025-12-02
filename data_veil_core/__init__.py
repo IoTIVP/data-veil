@@ -11,6 +11,7 @@ from .radar import veil_radar
 from .imu import veil_imu
 from .magnetometer import veil_magnetometer
 from .barometer import veil_barometer
+from .rf import veil_rf
 from .plugins import register_sensor, get_veil, list_sensors
 
 __all__ = [
@@ -21,6 +22,7 @@ __all__ = [
     "veil_imu",
     "veil_magnetometer",
     "veil_barometer",
+    "veil_rf",
     "register_sensor",
     "get_veil",
     "list_sensors",
